@@ -59,6 +59,9 @@ button{cursor:pointer}
 
 .prog{display:flex;align-items:center;justify-content:space-between;gap:10px;font-family:var(--f-mono);font-size:13px;color:var(--muted)}
 .prog b{color:var(--burg);font-weight:700}
+.back{align-self:flex-start;background:none;border:0;padding:6px 2px;margin:0 0 -4px;font:inherit;font-family:var(--f-mono);font-size:13px;color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.back[hidden]{display:none}
+.opt.prev{outline:2px dashed var(--burg);outline-offset:-2px}
 .notches{display:flex;gap:4px}
 .notches i{width:14px;height:8px;border-radius:2px;border:2px solid var(--ink);background:transparent}
 .notches i.on{background:var(--mustard)}
@@ -182,6 +185,7 @@ button{cursor:pointer}
 
       <!-- 3. 질문 -->
       <section class="screen" id="s-q" hidden>
+        <button class="back" type="button" id="backBtn" hidden>← 이전</button>
         <div class="prog"><span id="progText"></span><span class="notches" id="notches" aria-hidden="true"></span></div>
         <div class="bubble" id="qText"></div>
         <div class="opts" id="opts"></div>
@@ -249,85 +253,64 @@ document.getElementById('favImg').src=IM.fav;
 
 const TYPES = {
   dreamer:{name:'벅찬 몽상가',pct:20,desc:'환상적인 세계관 속으로 기꺼이 걸어 들어가는 관객',
-    habit:'막이 오르면 이미 그 세계의 주민이 되어 있습니다.\n포스터 속 세계관 설정까지 찾아봅니다.',
+    habit:'막이 오르면 이미 그 세계의 인물이 되어 있습니다.\n프로그램북 속 세계관 설정까지 찾아봅니다.',
     recs:['위키드','하데스타운','슬립노모어','라이프 오브 파이','엘리자벳'],mate:'moodmaker',why:'같이 들뜨면서 보기 좋은 사이'},
-  moodmaker:{name:'짜릿한 분위기 메이커',pct:30,desc:'신나고 쇼적인 작품에서 에너지를 얻는 관객',
+  moodmaker:{name:'짜릿한 분위기 메이커',pct:30,desc:'신나는 음악을 통해 에너지를 얻는 관객',
     habit:'앵콜 무대 시작도 전에 이미 응원 도구 양손 가득!',
     recs:['식스','킹키부츠','물랑루즈','헤드윅','멤피스'],mate:'dreamer',why:'보고 나서 수다가 끊이지 않는 사이'},
-  wanderer:{name:'잠재력 있는 방랑자',pct:80,desc:'아직 일관된 취향 없이 찍먹하는, 어디로든 향할 수 있는 관객',
-    habit:'예매 기준은 \'지금 자리 남은 날\'입니다.\n보고 나서야 내 취향을 알게 됩니다.',
-    recs:['센과 치히로의 행방불명','위키드','시카고','팬레터','데스노트'],mate:null,why:'취향이 뚜렷한 누구든. 끌고 가 주는 친구를 만나면 취향이 빠르게 생깁니다.'},
-  witness:{name:'담담한 목격자',pct:10,desc:'텍스트를 중시하며, 말없이 끝까지 지켜보다 집에 가서 곱씹는 관객',
-    habit:'막이 내려도 한동안 자리에 앉아 있습니다.\n대사 한 줄을 며칠씩 기억합니다.',
-    recs:['마리 퀴리','프라이드','12인의 성난 사람들','보도지침','햄릿'],mate:'aesthete',why:'같은 공연을 다른 방식으로 곱씹는 사이'},
-  lover:{name:'아련한 사랑꾼',pct:50,desc:'사랑 이야기에 약한 관객',
-    habit:'손수건과 휴지를 꼭 챙겨 갑니다.\n보고 난 뒤 그 커플의 후일담을 상상합니다.',
-    recs:['어쩌면 해피엔딩','베어 더 뮤지컬','매디슨 카운티의 다리','베르테르','프라이드'],mate:'witness',why:'우는 사람 옆에서 조용히 휴지를 건네는 사이'},
-  aesthete:{name:'날카로운 미학자',pct:10,desc:'무대 연출과 디자인에 관심이 많은 관객',
-    habit:'조명이 바뀌는 순간과 세트 전환에 숨을 죽입니다.\n공연장에 일찍 도착해 무대를 먼저 봅니다.',
-    recs:['웃는 남자','오페라의 유령','데스노트','한복 입은 남자','라이프 오브 파이'],mate:'rocker',why:'무대에서 눈을 못 떼는 이유가 서로 다른 사이'},
-  timelover:{name:'52만 5600분의 귀한 시간 향유자',pct:52,desc:'공연을 많이 보지는 않지만, 한 편 한 편을 오래 아끼며 보는 관객',
-    habit:'한 번 볼 때 제대로 봅니다.\n티켓 한 장을 책갈피처럼 오래 보관합니다.',
-    recs:['렌트','틱틱붐!','빌리 엘리어트','아트','하데스타운'],mate:'lover',why:'한 번의 관극을 정성스럽게 즐기는 사이'},
-  rocker:{name:'영원한 Rock N Rollers',pct:40,desc:'락 정신이 탑재된, 반골 기질의 관객',
-    habit:'소리 지르고 싶은 넘버가 나오면 속으로 같이 부릅니다.\n지정석보다 열기가 전해지는 자리가 좋습니다.',
-    recs:['헤드윅','넥스트 투 노멀','지저스 크라이스트 수퍼스타','쉐도우','리지'],mate:'moodmaker',why:'같이 뛰면서 볼 수 있는 사이'},
-  doomed:{name:'좋아 신 따위는 필요없어',pct:5,desc:'너도 죽고 나도 죽는 파멸극 러버 관객',
-    habit:'해피엔딩이라고 하면 일단 의심합니다.\n결말이 어두울수록 오래 기억에 남습니다.',
-    recs:['드라큘라','스위니 토드','프랑켄슈타인','지킬 앤 하이드','맥베스'],mate:'witness',why:'불 켜진 뒤에도 말없이 같은 생각을 하는 사이'}
+  witness:{name:'사색적인 목격자',pct:10,desc:'말없이 지켜보다 귀갓길에 장문 리뷰 쓰는 관객',
+    habit:'막이 내려도 한동안 자리에 앉아 있습니다.\n대사 한 줄을 몇 달 내내 곱씹습니다.',
+    recs:['섬','팬레터','아트','보도지침','햄릿'],mate:'aesthete',why:'같은 공연을 다른 방식으로 곱씹는 사이'},
+  lover:{name:'아련한 사랑꾼',pct:50,desc:'모든 종류의 사랑 이야기에 약한 관객',
+    habit:'손수건과 휴지를 꼭 챙겨 갑니다.\n보고 난 뒤 인물들의 뒷이야기를 상상합니다.',
+    recs:['어쩌면 해피엔딩','홍련','매디슨 카운티의 다리','베르테르','디어 에반 핸슨'],mate:'witness',why:'우는 사람 옆에서 조용히 휴지를 건네는 사이'},
+  aesthete:{name:'날카로운 미학자',pct:10,desc:'무대 연출과 디자인에 매료되는 관객',
+    habit:'장면이 전환될 때 숨을 죽입니다.\n빈 무대 촬영 가능 여부를 꼭 확인합니다.',
+    recs:['웃는 남자','오페라의 유령','데스노트','한복 입은 남자','라이프 오브 파이'],mate:'dreamer',why:'같은 무대를 다른 눈으로 보는 사이'},
+  doomed:{name:'타락한 도파민 중독자',pct:5,desc:'너도 죽고 나도 죽는 파멸극 러버 관객',
+    habit:'주인공이 행복하게 웃으면 일단 의심합니다.\n배우들이 흘리는 땀과 눈물의 양만큼 짜릿해집니다.',
+    recs:['드라큘라','스위니 토드','프랑켄슈타인','지킬 앤 하이드','지저스 크라이스트 수퍼스타'],mate:'witness',why:'불이 켜진 뒤 말없이 같은 생각을 하는 사이'}
 };
 const MATE_FOR_ANY=['moodmaker','witness','aesthete'];
 function mateKeys(t){return t.mate?[t.mate]:MATE_FOR_ANY}
 
 const T = TYPES;
 const QS = [
- {q:'비 오는 일요일 오후, 지금 틀고 싶은 플레이리스트는?',o:[['일렉 기타 소리 빠방한 밴드 음악','rocker'],['웅장한 영화 OST','dreamer'],['가사 하나하나 곱씹게 되는 노래','witness'],['지나간 사람이 떠오르는 감성 발라드','lover']]},
- {q:'갑자기 하루 휴가가 생겼다. 제일 끌리는 건?',o:[['친구들 불러서 엽떡에 노래방','moodmaker'],['혼자 천천히 전시 구경하기','aesthete'],['딱 하루뿐이니 정말 하고 싶은 한 가지만 골라서 제대로 보내기','timelover'],['계획 없이 발길 닿는 대로','wanderer']]},
- {q:'여행지에서 밤에 걷고 싶은 거리는?',o:[['안개 낀 골목, 가로등 아래 그림자가 긴 길','doomed'],['네온사인이 번쩍이고 사람들이 시끌벅적한 번화가','moodmaker'],['해가 지면 다른 세계로 넘어갈 것 같은 신비로운 골목','dreamer'],['아무 골목이나 들어가 일부러 길을 잃어 보기','wanderer']]},
- {q:'한 달에 한 번 나에게 선물을 준다면?',o:[['오래 아껴 둔 딱 하나, 일 년에 몇 번 못 하는 특별한 경험','timelover'],['노래방에서 두 시간 동안 소리지르며 노래하기','rocker'],['눈이 정화되는 큰 전시나 조명이 예쁜 공간','aesthete'],['좋아하는 사람과 보내는 저녁','lover']]},
- {q:'서점에서 책을 고를 때 먼저 보는 건?',o:[['아무 쪽이나 펼쳐서 읽은 첫 문장','witness'],['어둡고 불길한 분위기의 표지','doomed'],['제목부터 눈길을 사로잡는 흥미로운 책','moodmaker'],['판타지 소설 코너','dreamer']]},
- {q:'주말 약속이 두 개 겹쳤다. 고르는 기준은?',o:[['기준 없이 그날 눈 가는 쪽','wanderer'],['오랜만에 보는 사람, 마음이 더 가는 쪽','lover'],['눈치 안 보고 제일 자유롭게 놀 수 있는 쪽','rocker'],['일 년에 몇 번 못 잡는 약속이라 가장 의미 있는 쪽','timelover']]},
- {q:'친구 집에 놀러 갔을 때 제일 먼저 눈에 들어오는 건?',o:[['조명과 가구 배치, 인테리어','aesthete'],['책장에 꽂힌 책들','witness'],['벽에 붙은 어둡고 강렬한 포스터','doomed'],['냉장고 안과 간식 서랍','wanderer']]},
- {q:'어릴 때 제일 좋아했던 놀이는?',o:[['상상 속 나라를 만들고 거기 사는 주민 역할 하기','dreamer'],['거울 앞에서 춤추고 노래하며 혼자 쇼 하기','moodmaker'],['한 가지 놀이를 질릴 때까지 아주 오래 하기','timelover'],['어른들이 하지 말라는 규칙을 일부러 깨 보기','rocker']]},
- {q:'영화가 끝나고 엔딩 크레딧이 올라갈 때 나는?',o:[['주인공 커플이 어떻게 됐는지 생각하며 아직 눈물을 닦는 중','lover'],['방금 본 장면의 구도와 색감, 연출을 되짚는 중','aesthete'],['아무 말 없이 대사 한 줄을 곱씹는 중','witness'],['주인공이 무너지는 결말이 제일 마음에 박힌 중','doomed']]}
+ {q:'비 오는 일요일 오후, 지금 듣고 싶은 플레이리스트는?',o:[['신나서 어깨가 들썩이는 음악','moodmaker'],['웅장하고 몽환적인, 영화 같은 음악','dreamer'],['가사와 감정을 곱씹게 되는 잔잔한 음악','lover']]},
+ {q:'갑자기 하루 휴가가 생겼다. 제일 끌리는 건?',o:[['친구들 불러서 맛있는 음식과 수다 삼매경','moodmaker'],['혼자 보고싶던 공연 관람하기','aesthete'],['좋아하는 음악 들으며 눈 감고 망상하기','dreamer']]},
+ {q:'낯선 여행지에서 걸어 보고 싶은 거리는?',o:[['안개 낀 골목, 가로등 아래 분위기 있게 그림자가 진 길','doomed'],['아름다운 야경이 돋보이는 도시의 거리','aesthete'],['해가 지면 다른 세계로 넘어갈 것 같은 신비로운 골목','dreamer']]},
+ {q:'한 달에 한 번 나에게 선물을 준다면?',o:[['좋아하는 사람과 보내는 저녁','lover'],['노래방에서 두 시간 동안 소리지르며 노래하기','doomed'],['무릎에 고양이 앉혀 두고 책 읽기','witness']]},
+ {q:'서점에서 책을 샀다. 내가 이 책을 고른 이유는?',o:[['아무 쪽이나 펼쳐서 읽은 첫 문장','witness'],['호기심을 자극하는 기묘한 표지','doomed'],['첫눈에 눈길을 사로잡은 제목','moodmaker']]},
+ {q:'실수로 두 약속 일정이 겹쳤다. 나의 선택은?',o:[['내 마음이 더 끌리는 사람','lover'],['더 편하게 놀 수 있는 사람','moodmaker'],['먼저 잡힌 약속이 우선','witness']]},
+ {q:'친구 집에 놀러 갔을 때 제일 먼저 눈에 들어오는 건?',o:[['조명과 가구 배치, 인테리어','aesthete'],['한쪽 벽을 가득 채운 책들','witness'],['벽에 붙은 무섭고 강렬한 포스터','doomed']]},
+ {q:'어릴 적 제일 좋아했던 놀이는?',o:[['상상 속 나라를 만들고 역할놀이 하기','dreamer'],['거울 앞에서 춤추고 노래하며 혼자 쇼 하기','moodmaker'],['혼자 그림을 그리거나 무언가를 만들며 꾸미기','aesthete']]},
+ {q:'영화가 끝나고 엔딩 크레딧이 올라갈 때 나는?',o:[['주인공 커플이 어떻게 됐는지 생각하며 아직 눈물을 닦는 중','lover'],['방금 본 장면의 구도와 색감, 연출을 되짚는 중','aesthete'],['주인공이 무너진 결말에 짜릿해하는 중','doomed']]}
 ];
 
-/* 각 선지는 1순위 유형에 3점, 연관된 유형에 1점을 준다. 선지마다 한 번씩만 등장하도록 균형을 맞춰 두었다. */
+/* 각 선지는 1순위 유형에 3점, 연관된 유형에 1점을 준다. 보조 유형은 시뮬레이션으로 유형별 비율이 고르게 나오도록 맞췄다. */
 const SEC=[
- ['doomed','moodmaker','lover','witness'],
- ['rocker','witness','dreamer','moodmaker'],
- ['wanderer','rocker','aesthete','dreamer'],
- ['aesthete','moodmaker','dreamer','timelover'],
- ['aesthete','rocker','wanderer','wanderer'],
- ['moodmaker','timelover','wanderer','lover'],
- ['timelover','dreamer','rocker','witness'],
- ['lover','aesthete','witness','doomed'],
- ['doomed','doomed','timelover','lover']
+ ['lover','witness','witness'],
+ ['doomed','dreamer','lover'],
+ ['lover','dreamer','lover'],
+ ['aesthete','moodmaker','aesthete'],
+ ['doomed','dreamer','lover'],
+ ['witness','dreamer','dreamer'],
+ ['dreamer','lover','dreamer'],
+ ['witness','dreamer','witness'],
+ ['moodmaker','witness','witness']
 ];
 QS.forEach((q,qi)=>q.o.forEach((o,oi)=>{o[2]=SEC[qi][oi]}));
+/* 동점이면 대표 선택(3점)을 더 많이 받은 유형, 그다음은 그 유형을 더 나중에 고른 쪽이 이긴다. 추가 질문은 없다. */
 function judge(picks,salt){
-  const score={};Object.keys(T).forEach(k=>{score[k]=0});
-  picks.forEach(pr=>{score[pr[0]]+=3;score[pr[1]]+=1});
-  const max=Math.max(...Object.values(score));
-  const tied=Object.keys(score).filter(k=>score[k]===max).sort();
-  const key=tied.length===1?tied[0]:tied[hash((salt||'')+'|'+picks.join('|'))%tied.length];
-  return {key,tied,score};
+  const score={},pc={},lp={},ls={};
+  Object.keys(T).forEach(k=>{score[k]=0;pc[k]=0;lp[k]=-1;ls[k]=-1});
+  picks.forEach((pr,i)=>{score[pr[0]]+=3;score[pr[1]]+=1;pc[pr[0]]++;lp[pr[0]]=i;ls[pr[1]]=i});
+  const ks=Object.keys(T).sort((a,b)=>score[b]-score[a]||pc[b]-pc[a]||lp[b]-lp[a]||ls[b]-ls[a]||hash((salt||'')+a)-hash((salt||'')+b));
+  return {key:ks[0],score};
 }
-/* 동점일 때만 묻는 마지막 질문. 동점인 유형의 선지만 보여 준다. */
-const TIE_OPTS={
-  rocker:'객석이 전부 일어나 소리 지르는 앙코르',
-  dreamer:'막이 오르자마자 다른 세계 한가운데 서 있는 순간',
-  witness:'불이 켜진 뒤에도 말없이 앉아 대사 한 줄을 곱씹는 시간',
-  lover:'마지막 장면에서 두 사람이 서로를 말없이 바라보는 순간',
-  aesthete:'조명이 바뀌면서 세트가 스르르 열리는 순간',
-  timelover:'일 년에 한 번뿐인 관극이라 한 장면도 놓치기 싫은 마음',
-  moodmaker:'커튼콜에서 배우와 관객이 다 같이 뛰는 순간',
-  wanderer:'뭘 봐도 재밌어서 다음 공연이 벌써 궁금한 마음',
-  doomed:'주인공이 전부를 걸고 무너지는 마지막 넘버'
-};
 
 const $=id=>document.getElementById(id);
-const state={name:'',picks:[],idx:0,key:null,dateStr:''};
+const state={name:'',picks:[],sel:[],idx:0,key:null,dateStr:''};
 let busy=false;
 
 const CLERK={'s-name':'staff_wave','s-doc':'staff_check','s-q':'staff_check','s-print':'staff_give'};
@@ -350,10 +333,11 @@ $('nameForm').addEventListener('submit',e=>{
   show('s-doc');
   $('docBubble').firstChild.nodeValue='할인 증빙 부탁드려요.';
 });
-$('docBtn').addEventListener('click',()=>{state.picks=[];state.idx=0;show('s-q');renderQ()});
+$('docBtn').addEventListener('click',()=>{state.picks=[];state.sel=[];state.idx=0;show('s-q');renderQ()});
 
 function renderQ(){
   const i=state.idx,q=QS[i];
+  $('backBtn').hidden=(i===0);
   $('progText').innerHTML='증빙하는 중...<b>'+(i+1)+'/9</b>';
   $('notches').innerHTML=QS.map((_,n)=>'<i class="'+(n<=i?'on':'')+'"></i>').join('');
   $('qText').textContent=q.q;
@@ -363,45 +347,30 @@ function renderQ(){
     const c=document.createElement('span');c.className='chip';c.textContent='ABCD'[n];
     const t=document.createElement('span');t.textContent=o[0];
     b.append(c,t);
-    b.addEventListener('click',()=>pick(b,[o[1],o[2]]));
+    if(state.sel[i]===n)b.classList.add('prev');
+    b.addEventListener('click',()=>pick(b,[o[1],o[2]],n));
     box.appendChild(b);
   });
   const s=$('s-q');s.style.animation='none';void s.offsetWidth;s.style.animation='';
 }
-function pick(btn,pr){
+function pick(btn,pr,n){
   if(busy)return;busy=true;
   btn.classList.add('picked');$('opts').classList.add('lock');
-  state.picks.push(pr);
+  state.picks.push(pr);state.sel[state.idx]=n;
   setClerk('staff_nod');
   setTimeout(()=>{
     setClerk('staff_check');busy=false;
     if(state.idx<QS.length-1){state.idx++;renderQ()}else finish();
   },420);
 }
+$('backBtn').addEventListener('click',()=>{
+  if(busy)return;
+  if(state.idx>0){state.picks.pop();state.idx--}
+  renderQ();
+});
 function finish(){
   const r=judge(state.picks,state.name);
-  if(r.tied.length>1){askTie(r.tied);return}
   state.key=r.key;printTicket();
-}
-function askTie(tied){
-  show('s-q');
-  const list=tied.slice().sort((a,b)=>hash(state.name+a)-hash(state.name+b)).slice(0,4);
-  $('progText').innerHTML='증빙하는 중...<b>추가 서류</b>';
-  $('notches').innerHTML=QS.map(()=>'<i class="on"></i>').join('');
-  $('qText').textContent='서류가 한 장 더 필요해요. 마지막으로, 가장 끌리는 순간은?';
-  const box=$('opts');box.classList.remove('lock');box.innerHTML='';
-  list.forEach((k,n)=>{
-    const b=document.createElement('button');b.type='button';b.className='opt';
-    const c=document.createElement('span');c.className='chip';c.textContent='ABCD'[n];
-    const t=document.createElement('span');t.textContent=TIE_OPTS[k];
-    b.append(c,t);
-    b.addEventListener('click',()=>{
-      if(busy)return;busy=true;b.classList.add('picked');box.classList.add('lock');setClerk('staff_nod');
-      setTimeout(()=>{setClerk('staff_check');busy=false;state.key=k;printTicket()},420);
-    });
-    box.appendChild(b);
-  });
-  const sc=$('s-q');sc.style.animation='none';void sc.offsetWidth;sc.style.animation='';
 }
 function printTicket(){
   show('s-print');state.dateStr=today();
@@ -596,7 +565,7 @@ $('copyBtn').addEventListener('click',async()=>{
   b.textContent=ok?'복사됨!':'복사 실패';setTimeout(()=>{b.textContent=old},1600);
 });
 $('againBtn').addEventListener('click',()=>{
-  state.picks=[];state.idx=0;state.key=null;
+  state.picks=[];state.sel=[];state.idx=0;state.key=null;
   show('s-doc');window.scrollTo(0,0);
 });
 </script>
